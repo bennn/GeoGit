@@ -242,24 +242,21 @@ public class HRPlusTree extends HRPlusTreeUtils {
      * @param objectId
      * @return the container associated with @param objectId
      */
-    public HRPlusContainerNode lookupHRPlusContainerNode(ObjectId objectId){
-        // TODO is this right? I don't think this is right.
-        HRPlusContainerNode containerNode = new HRPlusContainerNode();
-        return containerNode;
+    public HRPlusContainerNode lookupHRPlusContainerNode(ObjectId objectId) {
+        // TODO unguarded cast
+        return (HRPlusContainerNode) this.db.get(objectId);
     }
 
     public HRPlusNode lookupHRPlusNode(ObjectId objectId){
-//        HRPlusNode node = this.db.get(objectId);
-//        return node;
-        // TODO implement. Should lookup from ObjectDatabase, but currently the nodes don't extend RevObject
-        return null;//
+        // TODO unguarded cast
+        return (HRPlusNode) this.db.get(objectId);
     }
     
     /**
      * @param layerId
      * @return entry points associated with @param layerId
      */
-    private List<HRPlusContainerNode> getRootsForLayerId(ObjectId layerId){
+    private List<HRPlusContainerNode> getRootsForLayerId(ObjectId layerId) {
         return rootMap.get(layerId);
     }
 

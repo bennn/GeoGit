@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class HRPlusNode {
+public class HRPlusNode implements RevObject {
 
     private ObjectId objectId;
     private ObjectId parentContainerId;
@@ -127,6 +127,18 @@ public class HRPlusNode {
             }
         }
         return;
+    }
+
+    @Override
+    public TYPE getType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ObjectId getId() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

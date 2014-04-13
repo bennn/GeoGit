@@ -10,15 +10,14 @@ import com.vividsolutions.jts.geom.Envelope;
 /**
  * Base class for HRPlus tree implementation of the spatial index.
  * This class contains utility methods for manipulating HRPlus trees.
- * Why are methods factored out into this class? Because we distinguish
+ * Utilities are factored out because we distinguish
  * between a plain HRPlus tree and an HRPlus tree partition. The latter is
  * used to speed up insertions.
  * 
- * See 
+ * For the original idea, see
  *     [1] http://www.cs.ust.hk/faculty/dimitris/PAPERS/ssdbm01.pdf
- * for the original idea, and
+ * and for details on insertion, see Section 4 of:
  *     [2] http://dbs.mathematik.uni-marburg.de/publications/myPapers/1990/BKSS90.pdf
- * (especially Section 4) for details on insertion.
  * 
  * @author jillian
  *

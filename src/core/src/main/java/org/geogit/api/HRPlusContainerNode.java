@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class HRPlusContainerNode {
+public class HRPlusContainerNode implements RevObject {
 
     // Map of nodes inhabiting this container
     private Map<ObjectId, HRPlusNode> nodeMap = new HashMap<ObjectId, HRPlusNode>();
@@ -141,5 +141,17 @@ public class HRPlusContainerNode {
             n.query(env, matches);
         }
         return;
+    }
+
+    @Override
+    public TYPE getType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ObjectId getId() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
