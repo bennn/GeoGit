@@ -128,4 +128,18 @@ public class HRPlusContainerNode {
         }
         return env;
     }
+    
+    /**
+     * Search this container for nodes within the envelope @param env and recurse
+     * into their containers.
+     * 
+     * @param env
+     * @param matches list of nodes across the entire tree that fit in this envelope
+     */
+    public void query(Envelope env, List<HRPlusNode> matches) {
+        for (HRPlusNode n : this.getNodes()) {
+            n.query(env, matches);
+        }
+        return;
+    }
 }

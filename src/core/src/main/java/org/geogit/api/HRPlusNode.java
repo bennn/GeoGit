@@ -16,13 +16,13 @@ public class HRPlusNode {
     private HRPlusContainerNode child;
     private List<ObjectId> layerIds = new ArrayList<ObjectId>();
     
-    public HRPlusNode(ObjectId layerId, Envelope bounds){
+    public HRPlusNode(ObjectId layerId, Envelope bounds) {
         super();
         this.layerIds.add(layerId);
         this.setBounds(bounds);
     }
 
-    public HRPlusNode(List<ObjectId> layerIds, Envelope bounds){
+    public HRPlusNode(List<ObjectId> layerIds, Envelope bounds) {
         super();
         this.layerIds.addAll(layerIds);
         this.setBounds(bounds);
@@ -108,6 +108,25 @@ public class HRPlusNode {
             expand(env);
         }
         this.child.getOverlap(env);
+    }
+    
+    /**
+     * Bounding box query. If this node fits in container, add it to list 
+     * and recurse on its child (if it has a child). Else end search.
+     * @param env
+     * @param matches
+     */
+    public void query(Envelope env, List<HRPlusNode> matches) {
+        // TODO okay to stop if there's no intersection?
+        if (this.getBounds().intersects(env)) {
+            // A match!
+            matches.add(this);
+            if (!this.isLeaf()) {
+                // Not a leaf, continue searching child
+                this.getChild().query(env, matches);
+            }
+        }
+        return;
     }
 
 }

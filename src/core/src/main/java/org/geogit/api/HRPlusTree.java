@@ -65,6 +65,31 @@ public class HRPlusTree extends HRPlusTreeUtils {
             this.addRootTableEntry(newRoot);
         }
     }
+    
+    /**
+     * Bounding box query.
+     * Search the tree for nodes within the given envelope.
+     * 
+     * Start at the roots, search all those containers. In each container, search 
+     * the nodes contained within and their respective containers.
+     * 
+     * @param env
+     * @return
+     */
+    public List<HRPlusNode> query(Envelope env) {
+        // HRPlusNode has a getBounds and a getChild (returns container)
+        // Containers have a getNodes and a getMBR (expensive)
+        List<HRPlusNode> matches = new ArrayList<HRPlusNode>();
+        // Search all container nodes in @field rootMap
+        for (List<HRPlusContainerNode> roots : this.rootMap.values()) {
+            for (HRPlusContainerNode root : roots) {
+                // For now, search each root. We could check the MBR and potentially
+                // exclude some paths here, but I believe it's faster to check matches at each node.
+                root.query(env, matches);
+            }
+        }
+        return matches;
+    }
 
     /**
      * Add a new root to the overall table of entry points.
