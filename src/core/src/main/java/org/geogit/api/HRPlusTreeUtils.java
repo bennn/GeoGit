@@ -23,6 +23,28 @@ import com.vividsolutions.jts.geom.Envelope;
  *
  */
 public class HRPlusTreeUtils {
+    
+    // Maximum degree for any node. We split if a node has greater degree during an insert.
+    private static final int MIN_DEGREE = 1;
+    private static final int MAX_DEGREE = 3;
+    
+    /**
+     * Return the minimum number of nodes a container in this tree may hold.
+     * This is the parameter `m` in the paper [2]
+     */
+    public int getMinDegree() {
+        return MIN_DEGREE;
+    }
+
+    /**
+     * Return the minimum number of nodes a container in this tree may hold.
+     * If, on insert, a container gets more nodes, then it will be split.
+     * 
+     * This is the parameter `M` in the paper [2]
+     */
+    public int getMaxDegree() {
+        return MAX_DEGREE;
+    }
 
     /**
      * Create an envelope covering all the points in @param nodes. Used to 
@@ -62,6 +84,17 @@ public class HRPlusTreeUtils {
     protected static double getTotalAreaOfTwoRegions(List<HRPlusNode> firstGroup, List<HRPlusNode> secondGroup){
         return boundingBoxOf(firstGroup).getArea() + boundingBoxOf(secondGroup).getArea();
     }
+    
+    /**
+     * Get total perimeter of the envelopes covering two groups of nodes.
+     * 
+     * @param firstGroup
+     * @param secondGroup
+     * @return combined perimeter of the two envelopes
+     */
+    protected static double getTotalMarginOfTwoRegions(List<HRPlusNode> firstGroup, List<HRPlusNode> secondGroup){
+        return marginOf(boundingBoxOf(firstGroup)) + marginOf(boundingBoxOf(secondGroup));
+    }
 
     /**
      * margin = perimeter
@@ -75,24 +108,31 @@ public class HRPlusTreeUtils {
     }
 
     /**
-     * Sum many perimeters. I do not entirely understand the implementation.
-     * It's based off the algorithm presented in [2], and that paper suggests
-     * minimizing perimeters as a useful way to optimize an index.
+     * The paper [2] suggests minimizing perimeters as a useful way to optimize an index.
+     * Sum the perimeters of all possible partitions of nodes along one axis.
+     * 
      * @param nodes
      * @return
      */
     protected static double sumOfMargins(List<HRPlusNode> nodes){
-        // Divide nodes into two even groups.
-        List<HRPlusNode> firstGroup = nodes.subList(0, nodes.size()/2);
-        List<HRPlusNode> secondGroup = nodes.subList(nodes.size() - firstGroup.size(), nodes.size() -1);
-
-        double marginValueSum = 0;
-        // Iteratively add one element of the second group to the first. Add 
-        while(!secondGroup.isEmpty()){
-            marginValueSum +=  marginOf(boundingBoxOf(firstGroup)) + marginOf(boundingBoxOf(secondGroup));
-            firstGroup.add(secondGroup.remove(0));
-        }
-        return marginValueSum;
+    	if (nodes.isEmpty() || nodes.size() == 1) {
+    		return marginOf(boundingBoxOf(nodes));
+    	} else {
+    		// Begin with a one-element list and an (n-1) element list.
+	        List<HRPlusNode> firstGroup = new ArrayList<HRPlusNode>();
+	        firstGroup.addAll((nodes.subList(0, 1)));
+	        List<HRPlusNode> secondGroup = new ArrayList<HRPlusNode>();
+	        secondGroup.addAll(nodes.subList(1, nodes.size()));
+	
+	        double marginValueSum = 0;
+	        // Iteratively add one element of the second group to the first.
+	        while(!secondGroup.isEmpty()){
+	            marginValueSum +=  marginOf(boundingBoxOf(firstGroup)) + marginOf(boundingBoxOf(secondGroup));
+	            HRPlusNode removed = secondGroup.remove(0);
+	            firstGroup.add(removed);
+	        }
+	        return marginValueSum;
+    	}
     }
 
     /**
@@ -140,7 +180,7 @@ public class HRPlusTreeUtils {
         List<HRPlusNode> minXSort = new ArrayList<HRPlusNode>(nodes);
         Collections.sort(minXSort, new Comparator<HRPlusNode>() {
             public int compare(HRPlusNode n1, HRPlusNode n2) {
-                return Double.compare(n1.getMinX(), n1.getMinX());
+                return Double.compare(n1.getMinX(), n2.getMinX());
             }
         });
         return minXSort;
@@ -155,7 +195,7 @@ public class HRPlusTreeUtils {
         List<HRPlusNode> minYSort = new ArrayList<HRPlusNode>(nodes);
         Collections.sort(minYSort, new Comparator<HRPlusNode>() {
             public int compare(HRPlusNode n1, HRPlusNode n2) {
-                return Double.compare(n1.getMinY(), n1.getMinY());
+                return Double.compare(n1.getMinY(), n2.getMinY());
             }
         });
         return minYSort;
@@ -170,7 +210,7 @@ public class HRPlusTreeUtils {
         List<HRPlusNode> maxXSort = new ArrayList<HRPlusNode>(nodes);
         Collections.sort(maxXSort, new Comparator<HRPlusNode>() {
             public int compare(HRPlusNode n1, HRPlusNode n2) {
-                return Double.compare(n1.getMaxX(), n1.getMaxX());
+                return Double.compare(n1.getMaxX(), n2.getMaxX());
             }
         });
         return maxXSort;
@@ -185,7 +225,7 @@ public class HRPlusTreeUtils {
         List<HRPlusNode> maxYSort = new ArrayList<HRPlusNode>(nodes);
         Collections.sort(maxYSort, new Comparator<HRPlusNode>() {
             public int compare(HRPlusNode n1, HRPlusNode n2) {
-                return Double.compare(n1.getMaxY(), n1.getMaxY());
+                return Double.compare(n1.getMaxY(), n2.getMaxY());
             }
         });
         return maxYSort;

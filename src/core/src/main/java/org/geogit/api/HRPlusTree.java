@@ -25,8 +25,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author jillian
  */
 public class HRPlusTree extends HRPlusTreeUtils {
-    // Maximum degree for any node. We split if a node has greater degree during an insert.
-    private static final int DEGREE = 3;
+    
     // Connection to geogit database
     private ObjectDatabase db;
     // Id for this tree
@@ -34,7 +33,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
     // Map of Lists of roots. The lists contain Nodes with the same objectId,
     // and are possibly added to during inserts.
     private Map<ObjectId, List<HRPlusContainerNode>> rootMap = new HashMap<ObjectId, List<HRPlusContainerNode>>();
-
+    
     /**
      * Insertion algorithm, roughly:
      * - Create an HRPlus node from @param layerId and @param bounds
@@ -49,12 +48,21 @@ public class HRPlusTree extends HRPlusTreeUtils {
         HRPlusNode newNode = new HRPlusNode(layerId, bounds);
         // Find appropriate container to insert into
         HRPlusContainerNode containerNode = chooseSubtree(newNode);
+        
+        if(containerNode == null)
+        {
+        	//adding a new container node to the tree
+            containerNode = new HRPlusContainerNode();
+            containerNode.addNode(newNode);
+            this.addRootTableEntry(containerNode);
+            return;
+        }
         // Perform insert
         containerNode.addNode(newNode);
         // Check if we have a degree overflow. Did adding the new node increase the degree of its
         // parent beyond @field DEGREE ?
         List<HRPlusContainerNode> newContainerNodes = null;
-        if(containerNode.getNumNodes() >= HRPlusTree.DEGREE){
+        if(containerNode.getNumNodes() >= this.getMaxDegree()){
             // Shoot, we have overflow. Split the old container.
             newContainerNodes = treatOverflow(containerNode, layerId);
         }
@@ -83,8 +91,6 @@ public class HRPlusTree extends HRPlusTreeUtils {
         // Search all container nodes in @field rootMap
         for (List<HRPlusContainerNode> roots : this.rootMap.values()) {
             for (HRPlusContainerNode root : roots) {
-                // For now, search each root. We could check the MBR and potentially
-                // exclude some paths here, but I believe it's faster to check matches at each node.
                 root.query(env, matches);
             }
         }
@@ -111,6 +117,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
             roots.add(newRoot);
             this.rootMap.put(layerId, roots);
         }
+        
     }
 
     /**
@@ -140,7 +147,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
             }
             // If new container is over-full, split it spatially. This is legal because
             // all nodes in the new container belong to the same layer id.
-            if(newContainerNode.getNumNodes() > HRPlusTree.DEGREE){
+            if(newContainerNode.getNumNodes() > this.getMaxDegree()){
                 HRPlusContainerNode secondNewContainerNode = keySplitContainerNode(newContainerNode);
                 newContainerNodes.add(secondNewContainerNode);
             }
@@ -227,7 +234,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
             }
             // We may have to split. Create a list in case.
             List<HRPlusContainerNode> newContainerNodes = null;
-            if(parentContainer.getNumNodes() > HRPlusTree.DEGREE){
+            if(parentContainer.getNumNodes() > this.getMaxDegree()){
                 // A split!
                 newContainerNodes = treatOverflow(parentContainer, layerId);
             }
@@ -269,11 +276,11 @@ public class HRPlusTree extends HRPlusTreeUtils {
      */
     private HRPlusContainerNode chooseSubtree(final HRPlusNode newNode){
         // First, find an entry point for this node.
-        List<HRPlusContainerNode> containerNodes = getRootsForLayerId(newNode.getFirstLayerId());
-        if(containerNodes.isEmpty()){
-            // Root points to empty subtree. Create a new one and we're finished.
-            HRPlusContainerNode newContainerNode = new HRPlusContainerNode();
-            return newContainerNode;
+        List<HRPlusContainerNode> containerNodes = getRootsForLayerId(newNode.getFirstLayerId()); 
+        // TODO: Can we avoid using null?
+        if(containerNodes==null){
+            // Just return null, since we check for null in insert()
+            return null;
         }
         // Gotta search for a place to insert.
         // Choose the container node with the largest intersection area with the new node.

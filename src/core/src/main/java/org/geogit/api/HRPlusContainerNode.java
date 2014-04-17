@@ -90,6 +90,12 @@ public class HRPlusContainerNode implements RevObject {
         // they all do and this container is a leaf
         return this.nodeMap.isEmpty() || this.getNodes().get(0).isLeaf();
     }
+    /**
+     * Check if the container does not have any nodes
+     */
+    public boolean isEmpty(){
+    	return(this.nodeMap.isEmpty());
+    }
 	
     /** 
      * Check whether any children of this node are leaves.
@@ -105,16 +111,11 @@ public class HRPlusContainerNode implements RevObject {
     }
 
     /** 
-     * Modify the given envelope to contain all nodes within this tree.
      * @param env
+     * @return the envelope obtained by intersecting @param env with this container's MBR
      */
-    public void getOverlap(Envelope env){
-        env = new Envelope(0, 0, 0, 0);
-        for(HRPlusNode node : nodeMap.values()){
-            Envelope nodeEnv = new Envelope();
-            node.expand(nodeEnv);
-            env = env.intersection(nodeEnv);
-        }
+    public Envelope getOverlap(Envelope env){
+        return this.getMBR().intersection(env);
     }
 
     /**
@@ -137,9 +138,11 @@ public class HRPlusContainerNode implements RevObject {
      * @param matches list of nodes across the entire tree that fit in this envelope
      */
     public void query(Envelope env, List<HRPlusNode> matches) {
-        for (HRPlusNode n : this.getNodes()) {
-            n.query(env, matches);
-        }
+    	if(this.getMBR().intersects(env)) {
+    	    for (HRPlusNode n : this.getNodes()) {
+                n.query(env, matches);
+            }
+    	}
         return;
     }
 

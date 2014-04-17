@@ -6,24 +6,23 @@ import java.util.List;
 import com.vividsolutions.jts.geom.Envelope;
 
 public class HRPlusNode implements RevObject {
-
+    // TODO @field objectId is never set
     private ObjectId objectId;
+    // TODO @field parentContainerId is never set
     private ObjectId parentContainerId;
 
     // Bounds are either 2 values, for one-dimensional envelopes,
     // or 4 values, for two-dimensional envelopes
-    protected double[] bounds;
+    protected double[] bounds = new double[4];
     private HRPlusContainerNode child;
     private List<ObjectId> layerIds = new ArrayList<ObjectId>();
     
     public HRPlusNode(ObjectId layerId, Envelope bounds) {
-        super();
         this.layerIds.add(layerId);
         this.setBounds(bounds);
     }
 
     public HRPlusNode(List<ObjectId> layerIds, Envelope bounds) {
-        super();
         this.layerIds.addAll(layerIds);
         this.setBounds(bounds);
     }
@@ -53,10 +52,8 @@ public class HRPlusNode implements RevObject {
      * @param env
      */
     public void expand(Envelope env) {
-        env.expandToInclude(bounds[0], bounds[1]);
-        if (bounds.length > 2) {
-            env.expandToInclude(bounds[2], bounds[3]);
-        }
+        env.expandToInclude(this.getMinX(), this.getMinY());
+        env.expandToInclude(this.getMaxX(), this.getMaxY());
     } 
 
     public HRPlusContainerNode getChild(){
@@ -90,10 +87,11 @@ public class HRPlusNode implements RevObject {
         return this.parentContainerId;
     }
 
+    /**
+     * @return an envelope with bounds identical to the bounds of this node
+     */
     public Envelope getBounds(){
-        Envelope env = new Envelope();
-        this.expand(env);
-        return env;
+        return new Envelope(this.getMinX(), this.getMaxX(), this.getMinY(), this.getMaxY());
     }
 
     public void setBounds(Envelope env){
@@ -103,11 +101,17 @@ public class HRPlusNode implements RevObject {
         this.bounds[3] = env.getMaxY();
     }
 
-    public void getOverlap(Envelope env){
+    /**
+     * @param env
+     * @return the envelope obtained by intersecting 
+     */
+    public Envelope getOverlap(Envelope env){
         if(isLeaf()){
-            expand(env);
+            return this.getBounds().intersection(env);
+        } else {
+            // 2014-04-17: Not certain why we move to the child. Why not use this node's bounds?
+            return this.child.getOverlap(env);
         }
-        this.child.getOverlap(env);
     }
     
     /**
@@ -117,14 +121,14 @@ public class HRPlusNode implements RevObject {
      * @param matches
      */
     public void query(Envelope env, List<HRPlusNode> matches) {
-        // TODO okay to stop if there's no intersection?
         if (this.getBounds().intersects(env)) {
             // A match!
             matches.add(this);
-            if (!this.isLeaf()) {
-                // Not a leaf, continue searching child
-                this.getChild().query(env, matches);
-            }
+        }
+        
+        if (!this.isLeaf()) {
+            // Not a leaf, continue searching child
+            this.getChild().query(env, matches);
         }
         return;
     }
