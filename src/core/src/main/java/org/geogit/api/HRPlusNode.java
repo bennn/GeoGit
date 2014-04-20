@@ -20,6 +20,7 @@ public class HRPlusNode implements RevObject {
     public HRPlusNode(ObjectId layerId, Envelope bounds) {
         this.layerIds.add(layerId);
         this.setBounds(bounds);
+        this.objectId = layerId; //TODO: This not completely right. T
     }
 
     public HRPlusNode(List<ObjectId> layerIds, Envelope bounds) {
@@ -139,10 +140,12 @@ public class HRPlusNode implements RevObject {
         return null;
     }
 
-    @Override
-    public ObjectId getId() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public ObjectId getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+  
 
 }

@@ -258,31 +258,34 @@ public class HRPlusNodeTest {
         assertTrue(node.isLeaf());
     }
     
-/* TODO cannot run test without UNIQUE objectids for children
+
     @Test
     public void testQueryNodeSuccess(){
         // Set up children.
-        HRPlusNode childA = new HRPlusNode(new ObjectId(), new Envelope(-2,-3,-2,-3));
-        HRPlusNode childB = new HRPlusNode(new ObjectId(), new Envelope(2,3,2,3));
-        HRPlusNode childC = new HRPlusNode(new ObjectId(), new Envelope(-2,-3,2,3));
+        HRPlusNode childA = new HRPlusNode(ObjectId.forString("node 1"), new Envelope(-2,-3,-2,-3));
+        HRPlusNode childB = new HRPlusNode(ObjectId.forString("node 2"), new Envelope(2,3,2,3));
+        HRPlusNode childC = new HRPlusNode(ObjectId.forString("node 3"), new Envelope(-2,-3,2,3));
+       
         HRPlusContainerNode child = new HRPlusContainerNode();
-        child.addNode(childA); child.addNode(childB); child.addNode(childC);
+        child.addNode(childA); 
+        child.addNode(childB); 
+        child.addNode(childC);
         // Set up parent.
-        HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope(2,3,-2,-3));
+        HRPlusNode node = new HRPlusNode(ObjectId.forString("parent node"), new Envelope(2,3,-2,-3));
         node.setChild(child);
         // Execute query
         List<HRPlusNode> matches = new ArrayList<HRPlusNode>();
-        
-        node.query(new Envelope(-5, 5, -5, 5), matches);
+        Envelope env = new Envelope(-5,5,-5,5);
+        node.query(env, matches);
         
         assertEquals(4, matches.size());
         assertTrue(matches.contains(node));
         assertTrue(matches.contains(childA));
         assertTrue(matches.contains(childB));
         assertTrue(matches.contains(childC));
-        assertTrue(node.isLeaf());
+        assertFalse(node.isLeaf());
     }
-*/  
+  
     @Test
     public void testGetType(){
         // TODO implement that method!

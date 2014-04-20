@@ -393,18 +393,72 @@ public class HRPlusTreeUtilsTest {
 		  
 	  }
 	  
-	  // TODO add more tests
-//	  @Test 
-//	  public void testPartitionByMinOverlap(){
-//		  List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
-//		  Envelope a  = new Envelope(-5,5,-5,5);
-//		  Envelope b  = new Envelope(-5,5,-5,5);
-//		  nodes.add(new HRPlusNode(new ObjectId(),a));
-//		  nodes.add(new HRPlusNode(new ObjectId(),b));
-//		  
-//		  assertEquals(HRPlusTreeUtils.partitionByMinOverlap(nodes, nodes));
-//		  
-//	  }
+	  @Test 
+	  public void testPartitionByMinOverlap(){
+		  List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
+		  List<HRPlusNode> result = new ArrayList<HRPlusNode>();
+		  
+		  // Test a: One a line , one cluster in x-space (maybe add one for y)
+		  HRPlusNode a1  = new HRPlusNode( new ObjectId(), new Envelope(-12,-10,-2,2));
+		  HRPlusNode a2  = new HRPlusNode( new ObjectId(), new Envelope(-8,-6,-2,2));
+		  HRPlusNode a3 = new HRPlusNode( new ObjectId(), new Envelope(-4,-2,-2,2));
+		  HRPlusNode a4  = new HRPlusNode( new ObjectId(), new Envelope(2,4,-2,2));
+		 
+		  nodes.add(a1); nodes.add(a2); nodes.add(a3); nodes.add(a4); 
+		  result.add(a1);result.add(a2);result.add(a3);
+		  
+		  assertEquals(result,HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minXSort(nodes), HRPlusTreeUtils.maxXSort(nodes)));
+		  assertEquals(result,HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minYSort(nodes), HRPlusTreeUtils.maxYSort(nodes)));
+		  
+		  nodes.clear();
+		  result.clear();
+		  
+		  //Test b: Evenly spaced along x-axis
+		  
+		  HRPlusNode b1  = new HRPlusNode( new ObjectId(), new Envelope(-12,-10,-2,2));
+		  HRPlusNode b2  = new HRPlusNode( new ObjectId(), new Envelope(-8,-6,-2,2));
+		  HRPlusNode b3  = new HRPlusNode( new ObjectId(), new Envelope(-4,-2,-2,2));
+		  HRPlusNode b4  = new HRPlusNode( new ObjectId(), new Envelope(0,2,-2,2));
+		  nodes.add(b1); nodes.add(b2); nodes.add(b3); nodes.add(b4);
+		  result.add(b1);
+		  
+		  assertEquals(result,HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minXSort(nodes), HRPlusTreeUtils.maxXSort(nodes)));
+		  assertEquals(result,HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minYSort(nodes), HRPlusTreeUtils.maxYSort(nodes)));
+		  
+		  nodes.clear();
+		  result.clear();
+		  //Test 3: Clusters in II and IV quadrants
+		  
+		  HRPlusNode c1  = new HRPlusNode( new ObjectId(), new Envelope(-6,-4,2,3));
+		  HRPlusNode c2  = new HRPlusNode( new ObjectId(), new Envelope(-3,-2,4,5));
+		  HRPlusNode c3  = new HRPlusNode( new ObjectId(), new Envelope(-1,0,0,1));
+		  HRPlusNode c4  = new HRPlusNode( new ObjectId(), new Envelope(1,2,-4,-3)); 
+		  nodes.add(c1); nodes.add(c2); nodes.add(c3); nodes.add(c4); 
+		  result.addAll(nodes.subList(0, 2));
+		  assertTrue(result.containsAll(HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minXSort(nodes), HRPlusTreeUtils.maxXSort(nodes))));
+		 
+		  result.clear();
+		  result.addAll(nodes.subList(2, 4));
+		  assertTrue(result.containsAll(HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minYSort(nodes), HRPlusTreeUtils.maxYSort(nodes))));
+		  result.clear();
+		  nodes.clear();
+		  
+		  //Test 4: 3 intersecting stairs , one far away
+		  
+		  HRPlusNode d1  = new HRPlusNode( new ObjectId(), new Envelope(-10,-8,3,5));
+		  HRPlusNode d2  = new HRPlusNode( new ObjectId(), new Envelope(-9,-7,2,4));
+		  HRPlusNode d3  = new HRPlusNode( new ObjectId(), new Envelope(-8,-6,1,3));
+		  HRPlusNode d4  = new HRPlusNode( new ObjectId(), new Envelope(25,27,25,27)); 
+		  nodes.add(c1); nodes.add(c2); nodes.add(c3); nodes.add(c4); 
+		  result.addAll(nodes.subList(0, 3));
+		  assertTrue(result.containsAll(HRPlusTreeUtils.partitionByMinOverlap(HRPlusTreeUtils.minXSort(nodes), HRPlusTreeUtils.maxXSort(nodes))));
+		  result.clear();
+		  nodes.clear();
+		  
+		  
+		  
+	  
+	  }
 	  
 	  
 

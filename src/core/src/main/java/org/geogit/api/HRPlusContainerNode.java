@@ -12,6 +12,7 @@ public class HRPlusContainerNode implements RevObject {
     // Map of nodes inhabiting this container
     private Map<ObjectId, HRPlusNode> nodeMap = new HashMap<ObjectId, HRPlusNode>();
     // Self and parent ids
+    // TODO these are never set!
     private ObjectId objectId;
     private ObjectId parentId;
 
@@ -58,12 +59,12 @@ public class HRPlusContainerNode implements RevObject {
      */
     public boolean allNodesContainLayerId(ObjectId layerId){
         // if all entries are from the current layerId
+        boolean allTrue = true;
         for(HRPlusNode node : this.nodeMap.values()){
-            if (node.getLayerIds() == null || !node.getLayerIds().contains(layerId)) {
-                return false;
-            }
+            allTrue = allTrue &&
+                (node.getLayerIds() != null && node.getLayerIds().contains(layerId));
         }
-        return true;
+        return allTrue;
     }
 	
     /**
@@ -110,14 +111,6 @@ public class HRPlusContainerNode implements RevObject {
         return nextLevel.isLeaf();	
     }
 
-    /** 
-     * @param env
-     * @return the envelope obtained by intersecting @param env with this container's MBR
-     */
-    public Envelope getOverlap(Envelope env){
-        return this.getMBR().intersection(env);
-    }
-
     /**
      * Compute the minimum bounding rectangle for nodes in this tree.
      * @return
@@ -128,6 +121,14 @@ public class HRPlusContainerNode implements RevObject {
             node.expand(env);
         }
         return env;
+    }
+
+    /** 
+     * @param env
+     * @return the envelope obtained by intersecting @param env with this container's MBR
+     */
+    public Envelope getOverlap(Envelope env){
+        return this.getMBR().intersection(env);
     }
     
     /**

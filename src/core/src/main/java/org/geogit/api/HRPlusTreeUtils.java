@@ -163,11 +163,11 @@ public class HRPlusTreeUtils {
                 areaValueMinSort <= areaValueMaxSort)) {
             int splitPointMinSort = minPartition.getSplitPoint();
             // Get the spatially smallest partition of nodes from the minsort list
-            return minSort.subList(0, splitPointMinSort - 1);
+            return minSort.subList(0, splitPointMinSort);
         } else {
             int splitPointMaxSort = maxPartition.getSplitPoint();
             // Get the smallest (least perimeter/area) partition of nodes from the maxsort list
-            return maxSort.subList(0, splitPointMaxSort - 1);
+            return maxSort.subList(0, splitPointMaxSort);
         }
     }
 

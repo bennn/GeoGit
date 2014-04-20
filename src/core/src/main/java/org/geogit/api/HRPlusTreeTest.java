@@ -54,7 +54,7 @@ public class HRPlusTreeTest {
 		assertEquals(a,result.get(0).getBounds());
 	}
 	
-	/*
+	
 	@Test 
 	
     public void testQuery() {
@@ -62,20 +62,24 @@ public class HRPlusTreeTest {
 		 Envelope a  = new Envelope(-12,-10,-2,2);
 		 Envelope b  = new Envelope(-8,-6,-2,2);
 		 Envelope c  = new Envelope(-4,-2,-2,2);
-		 tree.insert(new ObjectId(),a);
-		 tree.insert(new ObjectId(),b);
-		 tree.insert(new ObjectId(),c);
+		 HRPlusNode nodeA = new HRPlusNode(ObjectId.forString("a"),a);
+		 HRPlusNode nodeB = new HRPlusNode(ObjectId.forString("b"),b);
+		 HRPlusNode nodeC = new HRPlusNode(ObjectId.forString("c"),c);
+		 
+		 tree.insert(nodeA.getObjectId(),nodeA.getBounds());
+		 tree.insert(nodeB.getObjectId(),nodeB.getBounds());
+		 tree.insert(nodeC.getObjectId(),nodeC.getBounds());
 		 
 		 //TODO: Need a method which returns all the nodes of the tree!
 		 
 		  List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
-		  nodes.add(new HRPlusNode(new ObjectId(),a));
-		  nodes.add(new HRPlusNode(new ObjectId(),b));
-		  nodes.add(new HRPlusNode(new ObjectId(),c));
+		  nodes.add(nodeA);
+		  nodes.add(nodeB);
+		  nodes.add(nodeC);
 		  
-		  assertEquals(nodes, tree.query(new Envelope(-50,-50,50,50)));
+		  assertTrue(nodes.containsAll(tree.query(new Envelope(-50,-50,50,50))));
 	}
-    */
+   
 	
 	
 
