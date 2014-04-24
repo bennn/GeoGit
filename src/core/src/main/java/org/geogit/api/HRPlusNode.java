@@ -5,47 +5,53 @@ import java.util.List;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class HRPlusNode implements RevObject {
+public class HRPlusNode /*implements RevObject*/ {
     // TODO @field objectId is never set
     private ObjectId objectId;
     // TODO @field parentContainerId is never set
     private ObjectId parentContainerId;
 
+    private ObjectId versionId;
+    
     // Bounds are either 2 values, for one-dimensional envelopes,
     // or 4 values, for two-dimensional envelopes
-    protected double[] bounds = new double[4];
+    protected Envelope bounds;
     private HRPlusContainerNode child;
-    private List<ObjectId> layerIds = new ArrayList<ObjectId>();
+   
+    // TODO why did she use a list? do we even need 1 layerId?
+    //private List<ObjectId> layerIds = new ArrayList<ObjectId>();
     
-    public HRPlusNode(ObjectId layerId, Envelope bounds) {
-        this.layerIds.add(layerId);
-        this.setBounds(bounds);
-        this.objectId = layerId; //TODO: This not completely right. T
+    
+    public HRPlusNode(ObjectId objectId, Envelope bounds, ObjectId versionId) {
+      //  this.layerIds.add(layerId);
+        this.bounds = bounds;
+        this.objectId = objectId;  
+        this.versionId = versionId;
     }
 
-    public HRPlusNode(List<ObjectId> layerIds, Envelope bounds) {
+   /* public HRPlusNode(List<ObjectId> layerIds, Envelope bounds) {
         this.layerIds.addAll(layerIds);
         this.setBounds(bounds);
-    }
+    }*/
 
     public ObjectId getObjectId(){
         return this.objectId;
     }
 
     public double getMinX(){
-        return this.bounds[0];
+        return this.bounds.getMinX();
     }
 
     public double getMinY(){
-        return this.bounds[1];
+        return this.bounds.getMinY();
     }
 
     public double getMaxX(){
-        return this.bounds[2];
+        return this.bounds.getMaxX();
     }
 
     public double getMaxY(){
-        return this.bounds[3];
+        return this.bounds.getMaxY();
     }
 
     /**
@@ -65,7 +71,7 @@ public class HRPlusNode implements RevObject {
         this.child = child;
     }
 
-    public List<ObjectId> getLayerIds() {
+    /*public List<ObjectId> getLayerIds() {
         return this.layerIds;
     }
 
@@ -78,7 +84,7 @@ public class HRPlusNode implements RevObject {
             return null;
         }
         return this.layerIds.get(0);
-    }
+    }*/
 
     public boolean isLeaf(){
         return this.child == null;
@@ -95,11 +101,9 @@ public class HRPlusNode implements RevObject {
         return new Envelope(this.getMinX(), this.getMaxX(), this.getMinY(), this.getMaxY());
     }
 
+    
     public void setBounds(Envelope env){
-        this.bounds[0] = env.getMinX();
-        this.bounds[1] = env.getMinY();
-        this.bounds[2] = env.getMaxX();
-        this.bounds[3] = env.getMaxY();
+       this.bounds = env;
     }
 
     /**
@@ -134,7 +138,7 @@ public class HRPlusNode implements RevObject {
         return;
     }
 
-    @Override
+  /*  @Override
     public TYPE getType() {
         // TODO Auto-generated method stub
         return null;
@@ -144,8 +148,25 @@ public class HRPlusNode implements RevObject {
 	public ObjectId getId() {
 		// TODO Auto-generated method stub
 		return null;
+	}*/
+    @Override
+public boolean equals(Object node){
+    	if(node==null)
+    		return false;
+    	if (this.getClass() != node.getClass())
+    	   {
+    	      return false;
+    	   }
+    	
+	    if(this.objectId != ((HRPlusNode)node).objectId)
+	    		return false;
+	    if(this.versionId != ((HRPlusNode)node).versionId)
+    		return false;
+	    if(this.bounds != ((HRPlusNode)node).bounds)
+    		return false;
+ 
+	        return true;
+	    
 	}
-
-  
 
 }

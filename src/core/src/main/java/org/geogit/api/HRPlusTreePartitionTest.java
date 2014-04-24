@@ -30,7 +30,7 @@ public class HRPlusTreePartitionTest {
     @Test(expected=IllegalArgumentException.class)
     public void testOneNode() {
         Envelope envA = new Envelope(-2,2,-2,2);
-        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA);
+        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA,new ObjectId());
         List<HRPlusNode> sortedNodes = new ArrayList<HRPlusNode>();
 
         sortedNodes.add(nodeA);
@@ -45,10 +45,10 @@ public class HRPlusTreePartitionTest {
         Envelope envB = new Envelope(-2,-4,2,4);
         Envelope envC = new Envelope(2,4,-2,-4);
         Envelope envD = new Envelope(2,4,2,4);
-        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA);
-        HRPlusNode nodeB = new HRPlusNode(new ObjectId(), envB);
-        HRPlusNode nodeC = new HRPlusNode(new ObjectId(), envC);
-        HRPlusNode nodeD = new HRPlusNode(new ObjectId(), envD);
+        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA, new ObjectId());
+        HRPlusNode nodeB = new HRPlusNode(new ObjectId(), envB, new ObjectId());
+        HRPlusNode nodeC = new HRPlusNode(new ObjectId(), envC, new ObjectId());
+        HRPlusNode nodeD = new HRPlusNode(new ObjectId(), envD, new ObjectId());
         
         List<HRPlusNode> sortedNodes = new ArrayList<HRPlusNode>();
         
@@ -70,10 +70,10 @@ public class HRPlusTreePartitionTest {
         Envelope envB = new Envelope(-2,2,-1,8);
         Envelope envC = new Envelope(-2,8,-1,1);
         Envelope envD = new Envelope(-2,2,1,-8);
-        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA);
-        HRPlusNode nodeB = new HRPlusNode(new ObjectId(), envB);
-        HRPlusNode nodeC = new HRPlusNode(new ObjectId(), envC);
-        HRPlusNode nodeD = new HRPlusNode(new ObjectId(), envD);
+        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA, new ObjectId());
+        HRPlusNode nodeB = new HRPlusNode(new ObjectId(), envB, new ObjectId());
+        HRPlusNode nodeC = new HRPlusNode(new ObjectId(), envC, new ObjectId());
+        HRPlusNode nodeD = new HRPlusNode(new ObjectId(), envD, new ObjectId());
         
         List<HRPlusNode> sortedNodes = new ArrayList<HRPlusNode>();
         
@@ -95,10 +95,10 @@ public class HRPlusTreePartitionTest {
         Envelope envB = new Envelope(-11,-6,7,8);
         Envelope envC = new Envelope(-10,-9,5,8);
         Envelope envD = new Envelope(5,8,5,8);
-        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA);
-        HRPlusNode nodeB = new HRPlusNode(new ObjectId(), envB);
-        HRPlusNode nodeC = new HRPlusNode(new ObjectId(), envC);
-        HRPlusNode nodeD = new HRPlusNode(new ObjectId(), envD);
+        HRPlusNode nodeA = new HRPlusNode(new ObjectId(), envA, new ObjectId());
+        HRPlusNode nodeB = new HRPlusNode(new ObjectId(), envB,new ObjectId());
+        HRPlusNode nodeC = new HRPlusNode(new ObjectId(), envC,new ObjectId());
+        HRPlusNode nodeD = new HRPlusNode(new ObjectId(), envD,new ObjectId());
         
         List<HRPlusNode> sortedNodes = new ArrayList<HRPlusNode>();
         
