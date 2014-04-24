@@ -32,10 +32,35 @@ public class HRPlusTreeTest {
 		return new HRPlusTree();
 	}
 	
-
 	@Test
-	public void testGetNodes() {
-		HRPlusTree tree = new HRPlusTree();
+	public void testGetNodesNull(){
+            HRPlusTree tree = new HRPlusTree();
+	    
+            List<HRPlusNode> nodes = tree.getNodes();
+            
+            assertEquals(0, nodes.size());
+	}
+	
+	@Test
+	public void testGetNodesSingleton(){
+            HRPlusTree tree = new HRPlusTree();
+            
+            ObjectId vid1 = ObjectId.forString("version");
+            ObjectId oid1 = ObjectId.forString("nodeid");
+            Envelope env1 = new Envelope(-3,9,18,12);
+            
+            tree.insert(oid1, env1, vid1);
+            
+            List<HRPlusNode> nodes = tree.getNodes();
+            
+            assertEquals(1, nodes.size());
+            assertEquals(oid1, nodes.get(0).getObjectId());
+            assertEquals(env1, nodes.get(0).getBounds());
+	}
+	
+	@Test
+	public void testGetNodesPreOverflow(){
+            HRPlusTree tree = new HRPlusTree();
 		List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
 		ObjectId id1    = ObjectId.forString("building1");
 		ObjectId id2    = ObjectId.forString("building2");
@@ -50,7 +75,6 @@ public class HRPlusTreeTest {
 		HRPlusNode nodeB1 = new HRPlusNode(id2, b1, versionId1);;
 		HRPlusNode nodeC1 = new HRPlusNode(id3, c1, versionId1);;
 		
-
 		tree.insert(id1, a1,versionId1);
 		tree.insert(id2, b1,versionId1);
 		tree.insert(id3, c1,versionId1);
@@ -61,47 +85,107 @@ public class HRPlusTreeTest {
 		List<HRPlusNode> result = tree.getNodes();
 		assertEquals(nodes.size(), result.size());
 		assertTrue(result.containsAll(nodes));
-		
+	}
 	
+	@Test
+	public void testGetNumNodesPostOverflow(){
+            HRPlusTree tree = new HRPlusTree();
 
+            ObjectId oid1    = ObjectId.forString("building1");
+            ObjectId oid2    = ObjectId.forString("building2");
+            ObjectId oid3    = ObjectId.forString("building3");
+            ObjectId oid4    = ObjectId.forString("building4");
+            ObjectId oid5    = ObjectId.forString("building5");
+            ObjectId oid6    = ObjectId.forString("building6");
+            
+            ObjectId versionId = ObjectId.forString("Version1");
+
+            Envelope env1 = new Envelope(-12, -10, -2, 2);
+            Envelope env2 = new Envelope(12, -10, -2, 2);
+            Envelope env3 = new Envelope(-9,-8,-10,31);
+            Envelope env4 = new Envelope(0,10,0,13);
+            Envelope env5 = new Envelope(3,5,-8,-12);
+            Envelope env6 = new Envelope(-90,-12,1,-27);
+
+            tree.insert(oid1, env1, versionId);
+            tree.insert(oid2, env2, versionId);
+            tree.insert(oid3, env3, versionId);
+            tree.insert(oid4, env4, versionId);
+            tree.insert(oid5, env5, versionId);
+            tree.insert(oid6, env6, versionId);
+
+            List<HRPlusNode> nodes = tree.getNodes();
+
+            assertEquals(6, nodes.size());
+	}
+	
+	@Test
+	public void testGetNumRootsEmptyTree(){
+	    HRPlusTree tree = new HRPlusTree();
+	    assertEquals(0, tree.getNumRoots());
+	}
+	
+	@Test
+	public void testGetNumRootsOneVersionIdOneNode(){
+	    HRPlusTree tree = new HRPlusTree();
+	    
+	    tree.insert(new ObjectId(), new Envelope(), new ObjectId());
+	    
+	    assertEquals(1, tree.getNumRoots());
+	}
+	
+	@Test
+        public void testGetNumRootsOneVersionIdNoOverflow(){
+            HRPlusTree tree = new HRPlusTree();
+            
+            ObjectId vid = ObjectId.forString("1.0.0");
+            tree.insert(ObjectId.forString("one"), new Envelope(), new ObjectId());
+            tree.insert(ObjectId.forString("two"), new Envelope(), new ObjectId());
+            tree.insert(ObjectId.forString("three"), new Envelope(), new ObjectId());
+            
+            assertEquals(1, tree.getNumRoots());	    
+	}
+	
+	@Test
+        public void testGetNumRootsOneVersionIdHasOverflow(){
+            HRPlusTree tree = new HRPlusTree();
+            
+            tree.insert(ObjectId.forString("one"), new Envelope(), new ObjectId());
+            tree.insert(ObjectId.forString("two"), new Envelope(), new ObjectId());
+            tree.insert(ObjectId.forString("three"), new Envelope(), new ObjectId());
+            tree.insert(ObjectId.forString("foar"), new Envelope(), new ObjectId());
+            
+            assertEquals(1, tree.getNumRoots());
+        }	
+
+	@Test
+	public void testGetNumRootsTwoVersionId() {
+            HRPlusTree tree = new HRPlusTree();
+            
+            ObjectId v1 = ObjectId.forString("1.0.0");
+            ObjectId v2 = ObjectId.forString("1.1.1");
+            
+            tree.insert(ObjectId.forString("one"), new Envelope(), v1);
+            tree.insert(ObjectId.forString("two"), new Envelope(), v1);
+            tree.insert(ObjectId.forString("three"), new Envelope(), v2);
+            tree.insert(ObjectId.forString("foar"), new Envelope(), v2);
+            
+            assertEquals(2, tree.getNumRoots());	    
 	}
 
 	@Test
-	public void testGetNumRoots() {
-		HRPlusTree tree = new HRPlusTree();
-		List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
-		// 1 Feature Node per Version (4 versions)
-		Envelope a1 = new Envelope(-12, -10, -2, 2);
-		Envelope a2 = new Envelope(12, -10, -2, 2);
-		Envelope a3 = new Envelope(-10, 12, -2, 2);
-		Envelope a4 = new Envelope(12, 10, -2, 2);
-		ObjectId id1    = ObjectId.forString("building1");
-		ObjectId id2    = ObjectId.forString("building2");
-		ObjectId id3    = ObjectId.forString("building3");
-		ObjectId id4    = ObjectId.forString("building4");
-		ObjectId versionId1 = ObjectId.forString("Version1");
-		ObjectId versionId2 = ObjectId.forString("Version2");
-		
-		
-		HRPlusNode nodeA1 = new HRPlusNode(id1, a1,versionId1);
-		HRPlusNode nodeB1 = new HRPlusNode(id2, a1,versionId1);
-		HRPlusNode nodeA2 = new HRPlusNode(id3, a1,versionId2);
-		HRPlusNode nodeB2 = new HRPlusNode(id4, a1,versionId2);
-
-		tree.insert(id1, a1,versionId1);
-		tree.insert(id2, a1,versionId1);
-		tree.insert(id3, a1,versionId2);
-		tree.insert(id4, a1,versionId2);
-
-		nodes.add(nodeA1);
-		nodes.add(nodeB1);
-		nodes.add(nodeA2);
-		nodes.add(nodeB2);
-		
-		assertEquals(2, tree.getNumRoots());
-
+	public void testGetNumRootsSixVersionId(){
+	    HRPlusTree tree = new HRPlusTree();
+	    
+            tree.insert(ObjectId.forString("1"), new Envelope(), ObjectId.forString("v1"));
+            tree.insert(ObjectId.forString("2"), new Envelope(), ObjectId.forString("v2"));
+            tree.insert(ObjectId.forString("3"), new Envelope(), ObjectId.forString("v3"));
+            tree.insert(ObjectId.forString("4"), new Envelope(), ObjectId.forString("v4"));
+            tree.insert(ObjectId.forString("5"), new Envelope(), ObjectId.forString("v5"));
+            tree.insert(ObjectId.forString("6"), new Envelope(), ObjectId.forString("v6"));
+	            
+	    assertEquals(6, tree.getNumRoots());
 	}
-
 	
 	@Test
 	public void testInsertNodesDiffVersion() {
@@ -432,7 +516,6 @@ public class HRPlusTreeTest {
         assertEquals(new Envelope(7,10,-5,-8), contA.getMBR());
         assertEquals(new Envelope(-10,-7,5,8), contB.getMBR());
     }
-  
 
 	
 	

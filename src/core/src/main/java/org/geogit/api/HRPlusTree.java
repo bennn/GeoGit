@@ -92,7 +92,6 @@ public class HRPlusTree extends HRPlusTreeUtils {
 		HRPlusContainerNode newRoot = adjustTree(containerNode, newContainerNode, versionId);
 		// Add new root to the table of entry points
 		if(newRoot!=null){
-		    System.out.printf("yoooyoyoyoyyo\n");
 			this.addRootTableEntry(newRoot);
 		}
 		return;
