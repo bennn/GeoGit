@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.geogit.storage.ObjectDatabase;
 
+import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -85,12 +86,13 @@ public class HRPlusTree extends HRPlusTreeUtils {
 		HRPlusContainerNode newContainerNode = null;
 		if (containerNode.getNumNodes() > this.getMaxDegree()) {
 			// Shoot, we have overflow. Split the old container.
-			newContainerNode = treatOverflow(containerNode, versionId); //PROBLEM: Returns null
+			newContainerNode = treatOverflow(containerNode, versionId);
 		}
 		// Balance the tree among roots.
 		HRPlusContainerNode newRoot = adjustTree(containerNode, newContainerNode, versionId);
 		// Add new root to the table of entry points
 		if(newRoot!=null){
+		    System.out.printf("yoooyoyoyoyyo\n");
 			this.addRootTableEntry(newRoot);
 		}
 		return;
@@ -154,34 +156,16 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	 * @param newRoot The node to insert into @field rootTable. This roots versionId must not already appear in the tree
 	 */
 	private void addRootTableEntry(HRPlusContainerNode newRoot) {
-		
-		// JILLIAN's version:
-		// Temp value: the existing list of roots corresponding to the current
-		/*  List<HRPlusContainerNode> roots = null;
-		// Iterate over layers contained in the param
-		for (ObjectId layerId : newRoot.getLayerIds()) {
-			// Find the existing entry for this layer id
-			roots = this.rootMap.get(layerId);
-			if (roots == null) {
-				// No existing entry. Make a new one.
-				roots = new ArrayList<HRPlusContainerNode>();
-			}
-			 Add this new root, update the @field rootMap
-			roots.add(newRoot);
-			this.rootMap.put(newRoot,roots);
-		
-		}*/
-		
-		
-		//TODO: (thoughts, blg59)
-		// 1. Can a container contain nodes belonging to 2 different versions? (no, not yet. The ideal HR+ tree does)
-		// 2. This is just made to insert new roots. Need to incorporate splits. (yes, we add a brand new version in this method)
                 ObjectId versionId = newRoot.getVersionId();
                 if (!this.hasVersion(versionId)) {
-                	
+                	// Adding a brand new root to tree 
                 	List<HRPlusContainerNode> roots = new ArrayList<HRPlusContainerNode>();
                 	roots.add(newRoot);
                 	this.rootMap.put(versionId, roots);
+                }else{
+                    // Adding a new root to an existing set
+                    List<HRPlusContainerNode> existing = this.rootMap.get(versionId);
+                    existing.add(newRoot);
                 }
 	}
 
@@ -212,6 +196,10 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	 * @return The newly-created container node
 	 */
 	public HRPlusContainerNode keySplitContainerNode(HRPlusContainerNode containerNode) {
+	    int numNodesExpected = this.getMaxDegree()+1;
+	        Preconditions.checkArgument(containerNode != null && containerNode.getNumNodes() == numNodesExpected,
+	            "keySplitContainerNode must be called on a non-null container with [%d] nodes",
+	            numNodesExpected);
 		// Uses R* splitting algorithm
 		List<HRPlusNode> minXSort = minXSort(containerNode.getNodes());
 		List<HRPlusNode> maxXSort = maxXSort(containerNode.getNodes());
@@ -271,6 +259,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	private HRPlusContainerNode adjustTree(
 			HRPlusContainerNode containerNode,
 			HRPlusContainerNode newContainerNode, ObjectId versionId) {
+            Preconditions.checkNotNull(containerNode);
 		// Loop variables. Parents of current node.
 		HRPlusNode parent;
 		HRPlusContainerNode parentContainer;
@@ -299,7 +288,8 @@ public class HRPlusTree extends HRPlusTreeUtils {
 			containerNode = parentContainer;
 			newContainerNode = secondSplitContainerNode;
 		}
-		return newContainerNode;
+                return newContainerNode;
+//                return containerNode;
 	}
 
 	/**
@@ -403,8 +393,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	 * @param containerList
 	 * @return list of nodes associated with a specific root(Version)
 	 */
-	private List<HRPlusNode> getNodesForRoot(
-			List<HRPlusContainerNode> containerList) {
+	private List<HRPlusNode> getNodesForRoot(List<HRPlusContainerNode> containerList) {
 
 		List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
 		for (HRPlusContainerNode c : containerList) {

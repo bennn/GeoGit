@@ -17,9 +17,9 @@ public class HRPlusNodeTest {
     
     @Test
     public void testGetObjectId(){
-        // TODO this field is never set!
-        HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope(),new ObjectId());
-        assertEquals(null, node.getObjectId());
+        ObjectId oid = new ObjectId();
+        HRPlusNode node = new HRPlusNode(oid, new Envelope(),new ObjectId());
+        assertEquals(oid, node.getObjectId());
     }
 
     @Test

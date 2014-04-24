@@ -67,7 +67,7 @@ public class HRPlusTreeTest {
 	}
 
 	@Test
-	public void testgetNumRoots() {
+	public void testGetNumRoots() {
 		HRPlusTree tree = new HRPlusTree();
 		List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
 		// 1 Feature Node per Version (4 versions)
@@ -161,7 +161,7 @@ public class HRPlusTreeTest {
 
 	
 	@Test
-	public void insertNodesSameVersion() {
+	public void testInsertNodesSameVersion() {
 		HRPlusTree tree = new HRPlusTree();
 		ObjectId versionId1 = ObjectId.forString("Version1");
 		
@@ -222,9 +222,9 @@ public class HRPlusTreeTest {
 		tree.insert(id3, c,versionId1);
 		tree.insert(id4, d,versionId1);
 		
+		assertEquals(4, tree.getNodes().size());
+		assertEquals(1, tree.getNumRoots());
 		assertEquals(2,tree.getContainersForRoot(versionId1).size());
-		
-		
 	}
 
 	@Test
@@ -260,10 +260,11 @@ public class HRPlusTreeTest {
 	}
 	
 	  
-    @Test(expected=NullPointerException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void testKeySplitContainerNodeNull(){
         HRPlusTree hr = new HRPlusTree();
         hr.keySplitContainerNode(null);
+        assertTrue(false);
     }
     
     @Test(expected=IllegalArgumentException.class)
