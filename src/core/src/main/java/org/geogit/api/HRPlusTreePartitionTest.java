@@ -24,7 +24,7 @@ public class HRPlusTreePartitionTest {
     public void testZeroNodes() {
         List<HRPlusNode> sortedNodes = new ArrayList<HRPlusNode>();
         // Constructor should raise Preconditions exception
-        HRPlusTreePartition pt = new HRPlusTreePartition(sortedNodes);
+        new HRPlusTreePartition(sortedNodes);
     }
     
     @Test(expected=IllegalArgumentException.class)
@@ -35,7 +35,7 @@ public class HRPlusTreePartitionTest {
 
         sortedNodes.add(nodeA);
         // Constructor should raise Preconditions exception
-        HRPlusTreePartition pt = new HRPlusTreePartition(sortedNodes);
+        new HRPlusTreePartition(sortedNodes);
     }
     
     @Test

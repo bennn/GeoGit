@@ -13,6 +13,9 @@ import com.vividsolutions.jts.geom.Envelope;
 
 public class HRPlusNodeTest {
     
+    /*
+     * Avoids deprecated assertEquals. 
+     */
     double DOUBLE_EPSILON = 0.000001;
     
     @Test
@@ -111,7 +114,7 @@ public class HRPlusNodeTest {
     
     @Test
     public void testGetChildNotNull(){
-        HRPlusContainerNode child = new HRPlusContainerNode(new ObjectId());
+        HRPlusContainerNode child = new HRPlusContainerNode();
         HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope(),new ObjectId());
         node.setChild(child);
         assertEquals(child, node.getChild());
@@ -126,7 +129,7 @@ public class HRPlusNodeTest {
     
     @Test
     public void testIsLeafFalse(){
-        HRPlusContainerNode child = new HRPlusContainerNode(new ObjectId());
+        HRPlusContainerNode child = new HRPlusContainerNode();
         HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope(),new ObjectId());
         node.setChild(child);
         assertFalse(node.isLeaf()); 
@@ -198,7 +201,7 @@ public class HRPlusNodeTest {
         // Set up children.
         Envelope childEnv = new Envelope(-2,-1,-2,-1);
         HRPlusNode childNode = new HRPlusNode(new ObjectId(), childEnv,new ObjectId());
-        HRPlusContainerNode child = new HRPlusContainerNode(new ObjectId());
+        HRPlusContainerNode child = new HRPlusContainerNode();
         child.addNode(childNode);
         // Set up parent. Envelope is disjoint from child.
         Envelope env = new Envelope(0, 10, 0, 10);
@@ -215,7 +218,7 @@ public class HRPlusNodeTest {
         // Set up children.
         Envelope childEnv = new Envelope(-2,-1,-2,-1);
         HRPlusNode childNode = new HRPlusNode(new ObjectId(), childEnv,new ObjectId());
-        HRPlusContainerNode child = new HRPlusContainerNode(new ObjectId());
+        HRPlusContainerNode child = new HRPlusContainerNode();
         child.addNode(childNode);
         // Set up parent. Envelope is disjoint from child.
         Envelope env = new Envelope(0, 10, 0, 10);
@@ -260,7 +263,7 @@ public class HRPlusNodeTest {
         HRPlusNode childB = new HRPlusNode(ObjectId.forString("node 2"), new Envelope(2,3,2,3),ObjectId.forString("v1"));
         HRPlusNode childC = new HRPlusNode(ObjectId.forString("node 3"), new Envelope(-2,-3,2,3),ObjectId.forString("v1"));
        
-        HRPlusContainerNode child = new HRPlusContainerNode(ObjectId.forString("v1"));
+        HRPlusContainerNode child = new HRPlusContainerNode();
         child.addNode(childA); 
         child.addNode(childB); 
         child.addNode(childC);
@@ -280,17 +283,17 @@ public class HRPlusNodeTest {
         assertFalse(node.isLeaf());
     }
   
-  /*  @Test
+    @Test
     public void testGetType(){
         // TODO implement that method!
-        HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope());
+        HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope(), new ObjectId());
         assertEquals(null, node.getType());
     }
     
     @Test
     public void testGetId(){
         // TODO implement that method!
-        HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope());
+        HRPlusNode node = new HRPlusNode(new ObjectId(), new Envelope(), new ObjectId());
         assertEquals(null, node.getId());
-    }*/
+    }
 }

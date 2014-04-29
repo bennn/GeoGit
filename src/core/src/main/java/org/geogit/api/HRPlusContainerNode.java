@@ -1,3 +1,7 @@
+/* Copyright (c) 2014 OpenPlans. All rights reserved.
+ * This code is licensed under the BSD New License, available at the root
+ * application directory.
+ */
 package org.geogit.api;
 
 import java.util.ArrayList;
@@ -7,104 +11,123 @@ import java.util.Map;
 
 import com.vividsolutions.jts.geom.Envelope;
 
+/**
+ * The core building block of HR+ Trees. 
+ * A container node surrounds data envelopes, representing them by their minimum bounding rectangle (MBR).
+ * Nodes within a container should be close, spatially, and every sub-container of this container should have an MBR contained within this MBR.
+ * <p>
+ * We use containers rather than pure nodes as the basic unit within an HR+ Tree to track overflow.
+ * Ideally, data will be spread evenly throughout the data structure; containers ensure this property.
+ * If, during insert, we add too many nodes to one container, the container is split into two and its nodes repartitioned.
+ * The method {@link HRPlusTree#insert} performs the check and repartitioning.
+ * 
+ * <h4>Notes</h4>
+ * <ul>
+ * <li>Need to instantiate object id. Currently, it's null.
+ * <ul>
+ */
 public class HRPlusContainerNode implements RevObject {
 
-	// Map of nodes inhabiting this container
+	/**
+	 *  Map of nodes inhabiting this container.
+	 *  Keys are the unique {@code ObjectId} for the nodes.
+	 */
 	private Map<ObjectId, HRPlusNode> nodeMap = new HashMap<ObjectId, HRPlusNode>();
-	// Self and parent ids
-	// TODO these are never set!
+
+	/**
+	 * Unique id describing this container.
+	 * TODO never set
+	 */
 	private ObjectId objectId;
+
+	/**
+	 * Unique id describing the parent of this.
+	 * Will be null if the node is a root.
+	 */
 	private ObjectId parentId;
 
-	private ObjectId versionId;
+        public HRPlusContainerNode() {
+                // TODO: Set objectid
+        }
 
-	/*
-	 * /** Get all the layer ids contained by this container node and all
-	 * sub-nodes.
-	 * 
-	 * @return
-	 */
-	/*
-	 * public List<ObjectId> getLayerIds(){ // Should this rather be a set? To
-	 * avoid duplicates. List<ObjectId> layerIds = new ArrayList<ObjectId>();
-	 * for(HRPlusNode node : this.nodeMap.values()){
-	 * layerIds.addAll(node.getLayerIds()); } return layerIds; }
-	 */
+        public HRPlusContainerNode(ObjectId parentId) {
+                super();
+                this.parentId = parentId;
+        }
 
-	// TODO: Assuming that a container is associated with only 1 version id
-	public HRPlusContainerNode(ObjectId versionId) {
-		this.versionId = versionId;
-		// TODO: Set its own object id, and parentId
-	}
-
+        /**
+         * Gets the objectId of this container.
+         * @return this.objectId  not null
+         */
 	public ObjectId getObjectId() {
 		return this.objectId;
 	}
 
+	/**
+	 * Gets the parentId of this container.
+	 * @return this.parentId  may be null
+	 */
 	public ObjectId getParentId() {
 		return this.parentId;
 	}
 
-	public ObjectId getVersionId() {
-		return this.versionId;
-	}
-
+	/**
+	 * Counts the number of nodes in this container.
+	 * Does not count nodes within sub-containers.
+	 * @return the number of direct child nodes of this container
+	 */
 	public int getNumNodes() {
 		return this.nodeMap.size();
 	}
 
+	/**
+	 * Adds a node to this container.
+	 * Simply inserts the node into {@code nodeMap}.
+	 * If the objectId of {@code node} is identical to an id existing in {@code nodeMap}, erase the existing node.
+	 * 
+	 * @param node  the node to insert
+	 */
 	public void addNode(HRPlusNode node) {
 		nodeMap.put(node.getObjectId(), node);
+		node.setParentContainerId(this.objectId);
 	}
 
+	/**
+	 * Removes a node from this container.
+	 * Specifically, removes the node whose object id matches {@code objectId}
+	 * 
+	 * @param objectId
+	 * @return the node just removed, null if nothing in {@code nodeMap} matched {@code objectId}
+	 */
 	public HRPlusNode removeNode(ObjectId objectId) {
 		return nodeMap.remove(objectId);
 	}
 
+	/**
+	 * Create a list of the nodes stored in this container.
+	 * 
+	 * @return a list containing the direct children of this container
+	 */
 	public List<HRPlusNode> getNodes() {
 		return new ArrayList<HRPlusNode>(this.nodeMap.values());
 	}
 
 	/**
-	 * @param layerId
-	 * @return true if every node in this container and below contains @param
-	 *         layerId
-	 */
-	/*
-	 * public boolean allNodesContainLayerId(ObjectId layerId){ // if all
-	 * entries are from the current layerId boolean allTrue = true;
-	 * for(HRPlusNode node : this.nodeMap.values()){ allTrue = allTrue &&
-	 * (node.getLayerIds() != null && node.getLayerIds().contains(layerId)); }
-	 * return allTrue; }
-	 */
-
-	/**
-	 * @param layerId
-	 * @return a list of nodes that exist in @param layerId
-	 */
-	/*
-	 * public List<HRPlusNode> getNodesForLayer(ObjectId layerId){
-	 * List<HRPlusNode> nodesForLayer = new ArrayList<HRPlusNode>();
-	 * for(HRPlusNode node : this.nodeMap.values()){
-	 * if(node.getLayerIds().contains(layerId)){ nodesForLayer.add(node); } }
-	 * return nodesForLayer; }
-	 */
-
-	/**
-	 * Determine whether this container is a leaf. A container may be non-empty
-	 * but still be a leaf.
+	 * Determine whether this container is a leaf. 
+	 * A leaf has no sub-containers (a leaf may contain nodes).
+	 * <p>
+	 * An HR+ tree is balanced by construction, so if one node within this container has no children, none of the nodes within this container do.
 	 * 
-	 * @return
+	 * @return boolean indicating whether this container is a leaf
 	 */
 	public boolean isLeaf() {
-		// HRPlus tree is balanced by construction, so if one contained node has
-		// no children,
-		// they all do and this container is a leaf
 		return this.nodeMap.isEmpty() || this.getNodes().get(0).isLeaf();
 	}
 
 	/**
-	 * Check if the container does not have any nodes
+	 * Check if the container does not have any nodes.
+	 * 
+	 * @return boolean indicating whether this container has any nodes inside.
 	 */
 	public boolean isEmpty() {
 		return (this.nodeMap.isEmpty());
@@ -112,8 +135,9 @@ public class HRPlusContainerNode implements RevObject {
 
 	/**
 	 * Check whether any children of this node are leaves.
+	 * Used in {@link HRPlusTree#chooseSubtree}.
 	 * 
-	 * @return
+	 * @return boolean indicating whether any sub-container of this container have leaves.
 	 */
 	public boolean isOneStepAboveLeafLevel() {
 		if (this.isLeaf()) {
@@ -123,11 +147,27 @@ public class HRPlusContainerNode implements RevObject {
 		HRPlusContainerNode nextLevel = this.getNodes().get(0).getChild();
 		return nextLevel.isLeaf();
 	}
+	
+	/**
+	 * Gets the version ids of each node within this container.
+	 * 
+	 * @return list of version ids, one for each node in this container
+	 */
+	public List<ObjectId> getVersionIds(){
+	        List<ObjectId> ids = new ArrayList<ObjectId>();
+	        for (HRPlusNode node : this.getNodes()){
+	                ids.add(node.getVersionId());
+	        }
+	        return ids;
+	}
 
 	/**
-	 * Compute the minimum bounding rectangle for nodes in this tree.
+	 * Compute the minimum bounding rectangle for nodes in this container.
+	 * MBR is empty if the container is empty.
+	 * MBR implicitly covers all nodes in sub-containers.
+	 * That is, these nodes are not checked to determine the MBR in this function, but we assume that the envelope for a node contains all envelopes of nodes under it.
 	 * 
-	 * @return
+	 * @return minimum bounding rectangle surrounding contained nodes.
 	 */
 	public Envelope getMBR() {
 		Envelope env = new Envelope();
@@ -138,21 +178,20 @@ public class HRPlusContainerNode implements RevObject {
 	}
 
 	/**
-	 * @param env
-	 * @return the envelope obtained by intersecting @param env with this
-	 *         container's MBR
+	 * Calculates overlap between this container's MBR and the argument envelope.
+	 * 
+	 * @param env  Envelope to compare to this container's MBR.
+	 * @return the envelope obtained by intersecting @param env with this container's MBR
 	 */
 	public Envelope getOverlap(Envelope env) {
 		return this.getMBR().intersection(env);
 	}
 
 	/**
-	 * Search this container for nodes within the envelope @param env and
-	 * recurse into their containers.
+	 * Search this container for nodes within the argument envelope and recurse into their containers.
 	 * 
 	 * @param env
-	 * @param matches
-	 *            list of nodes across the entire tree that fit in this envelope
+	 * @param matches list of nodes across the entire tree that fit in this envelope
 	 */
 	public void query(Envelope env, List<HRPlusNode> matches) {
 		if (this.getMBR().intersects(env)) {
@@ -164,10 +203,9 @@ public class HRPlusContainerNode implements RevObject {
 	}
 
 	/**
-	 * Return all the nodes in this container and all the nodes in the child
-	 * containers
+	 * Return all the nodes in this container and all the nodes in the child containers.
 	 * 
-	 * @return all the nodes below this container
+	 * @return all the nodes at and below this container
 	 */
 	public List<HRPlusNode> getNodesForContainer() {
 		List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
@@ -185,7 +223,6 @@ public class HRPlusContainerNode implements RevObject {
 		return nodes;
 	}
 
-	
 	@Override
 	public TYPE getType() {
 		// TODO Auto-generated method stub

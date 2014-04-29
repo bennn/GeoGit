@@ -16,18 +16,17 @@ import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Implementation of the HRPlus tree described in [1]
- * <a>http://www.cs.ust.hk/faculty/dimitris/PAPERS/ssdbm01.pdf</a>
+ * {@link http://www.cs.ust.hk/faculty/dimitris/PAPERS/ssdbm01.pdf}
  * We chose the HRPlus tree for the spatial index because it provides
- *<ul>
- *<li>Partially persistent. Provides access to past versions.</li>
- *<li>Provides multiple roots. (Entry points to past versions)</li>
- *<li>Trees share branches when data doesn't change</li>
- *<li>Space-efficient</li>
- *<li>Improved query performance over regular R-Tree or Historical R-Tree</li>
- *</ul>
- *<p>
+ *<p><ul>
+ *<li>Partial persistence. Can access to past versions.
+ *<li>Multiple roots. (Entry points to past versions)
+ *<li>Trees share branches when data doesn't change
+ *<li>Space-efficient
+ *<li>Improved query performance over regular R-Tree or Historical R-Tree
+ *<ul><p>
  * TODO build HR trees for different layers. Currently only have one tree for
- * one layer/features
+ * one layer/feature
  *</p>
  *<p>
  * TODO add data sharing between versions. An important part of HR+ trees
@@ -37,35 +36,40 @@ import com.vividsolutions.jts.geom.Envelope;
  * we implement the more space-inefficient technique of keeping all versions
  * separate first.
  *</p>
- * @author jillian
  */
 public class HRPlusTree extends HRPlusTreeUtils {
 
-	// Connection to geogit database
+        /**
+         * Connection to geogit database
+         */
 	private ObjectDatabase db;
-	// Id for this tree. Required by object database
+	/**
+	 * Unique id for this tree. Required by object database.
+	 */
 	private ObjectId objectId;
-	/*
+
+	/**
 	 * Map from versionId to tree root list.
 	 * The versionId denotes a timestamp, a historical copy of this data structure
-	 * The Roots are stored in a list because insert can potentially split a root into two.
+	 * The roots are stored in a list because insert can potentially split a root into two.
 	 */
 	private Map<ObjectId, List<HRPlusContainerNode>> rootMap = 
 			new HashMap<ObjectId, List<HRPlusContainerNode>>();
 	/**
+	 * Insert a node into this tree.
+	 * <p>
 	 * Insertion algorithm, roughly:
-     * Create an HRPlusNode from 
-     * @param layerId and 
-     * @param bounds
-     * Find the correct container node to insert into (@method chooseSubtree). Insert node into container.
-     * Check for degree overflow, if so, rebalance the tree.
-     * Re-organize tree among roots, add any new roots to the @field rootMap.
-     * 
-	 * @param objectId Denotes the object id of the node. Passing in for now, since dont know how to generate.
-	 * @param bounds The data itself. A region of a map.
-     * @param versionId Timestamp. Associates this node with a particular version of the tree
+	 * <ul>
+	 * <li>Create an HRPlusNode from {@param layerId} and {@param bounds}
+	 * <li>Find the correct container node to insert into (@method chooseSubtree). Insert node into container.
+	 * <li>Check for degree overflow, if so, rebalance the tree.
+	 * <li>Re-organize tree among roots, add any new roots to the @field rootMap.
+	 * <ul>
+	 * 
+	 * @param objectId  Denotes the object id of the node. Passing in for now, since dont know how to generate.
+	 * @param bounds  The data itself. A region of a map.
+	 * @param versionId  Timestamp. Associates this node with a particular version of the tree
 	 */
-	
 	public void insert(final ObjectId objectId, Envelope bounds,
 			final ObjectId versionId) {
 		// Create node from params
@@ -98,10 +102,12 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
-	 * Bounding box query. Recursively search the entire tree for nodes within the given envelope.
+	 * Search this tree for nodes contained within a bounding box.
+	 * <p>
+	 * Recursively search the entire tree for nodes within the given envelope.
          *
-	 * @param env The bounding box we restrict results to.
-	 * @return A list of nodes within @param env
+	 * @param env  The bounding box we restrict results to.
+	 * @return A list of nodes within {@param env}
 	 */
 	public List<HRPlusNode> query(Envelope env) {
 		// HRPlusNode has a getBounds and a getChild (returns container)
@@ -117,12 +123,13 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
-         * Similar to @method query, but search is limited to one version of the tree.
-         * Returns null if @param versionId does not appear as a key in @param rootMap.
+	 * Query, but restrict search to nodes of a particular version id.
+	 * <p>
+         * Returns null if {@param versionId} does not appear as a key in {@param rootMap}.
          *
-         * @param versionId The version of the tree we wish to search
-         * @param env Bounding box
-         * @return A list of nodes within @param env
+         * @param versionId  The version of the tree we wish to search
+         * @param env  Bounding box to search
+         * @return A list of nodes within {@param env} belonging to the version with id {@param versionId}
 	 */
 	public List<HRPlusNode> queryHistorical(ObjectId versionId, Envelope env) {
 		// Give up if version doesn't exist
@@ -138,10 +145,9 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
-	 * Check whether @param versionId points to a root in this tree.
-         * TODO untested.
+	 * Determines whether @param versionId points to a root in this tree.
 	 * 
-	 * @param versionId A timestamp, may match a root of this tree
+	 * @param versionId  A timestamp, may match a root of this tree
 	 * @return boolean indicating whether there is a subtree associated with @param versionId
 	 */
 	public boolean hasVersion(ObjectId versionId) {
@@ -149,22 +155,23 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
-	 * Add a new root (new versionid) to the overall table of entry points. Either add to an
-	 * existing entry or create a new one.
+	 * Add a new root to the overall table of entry points. 
+	 * Either add to an existing entry or create a new one.
 	 * 
-	 * @param newRoot The node to insert into @field rootTable. This roots versionId must not already appear in the tree
+	 * @param newRoot  The node to insert into {@field rootTable}
 	 */
 	private void addRootTableEntry(HRPlusContainerNode newRoot) {
-                ObjectId versionId = newRoot.getVersionId();
-                if (!this.hasVersion(versionId)) {
-                	// Adding a brand new root to tree 
-                	List<HRPlusContainerNode> roots = new ArrayList<HRPlusContainerNode>();
-                	roots.add(newRoot);
-                	this.rootMap.put(versionId, roots);
-                }else{
-                    // Adding a new root to an existing set
-                    List<HRPlusContainerNode> existing = this.rootMap.get(versionId);
-                    existing.add(newRoot);
+                for (ObjectId versionId : newRoot.getVersionIds()){
+                        if (!this.hasVersion(versionId)) {
+                	        // Adding a brand new root to tree 
+                                List<HRPlusContainerNode> roots = new ArrayList<HRPlusContainerNode>();
+                                roots.add(newRoot);
+                                this.rootMap.put(versionId, roots);
+                        }else{
+                                // Adding a new root to an existing set
+                                List<HRPlusContainerNode> existing = this.rootMap.get(versionId);
+                                existing.add(newRoot);
+                        }
                 }
 	}
 
@@ -173,13 +180,12 @@ public class HRPlusTree extends HRPlusTreeUtils {
          * <p>
 	 * TODO: do a version split. This comes after we share nodes between versions of the tree.
          * For now, the split is only spatial.
-         * </p>
-	 * @param containerNode Node we want to split due to overflow
-	 * @param versionId The version of the tree we're working with. Momentarily unused.
-	 * @return the new container node. (the old one is modified in keySplit)
+         * 
+	 * @param containerNode  Node we want to split due to overflow
+	 * @param versionId  The version of the tree we're working with. Momentarily unused.
+	 * @return the new container node (the old one is modified in keySplit)
 	 */
-	private HRPlusContainerNode treatOverflow(
-			HRPlusContainerNode containerNode, ObjectId versionId) {
+	private HRPlusContainerNode treatOverflow(HRPlusContainerNode containerNode, ObjectId versionId) {
 		return keySplitContainerNode(containerNode);
 	}
 
@@ -190,8 +196,8 @@ public class HRPlusTree extends HRPlusTreeUtils {
          *<p>
          * Algorithm computes and compares the 'goodness' of margin (perimeter) values.
          * See @method sumOfMargins for details.
-         *</p>
-	 * @param containerNode The container to split
+         *
+	 * @param containerNode  The container to split
 	 * @return The newly-created container node
 	 */
 	public HRPlusContainerNode keySplitContainerNode(HRPlusContainerNode containerNode) {
@@ -220,7 +226,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
 		// Create new container, move each node in partition from old container
 		// to new one.
 		// New container has same versionId as old one, for now. (Should maybe get a brand new timestamp.)
-		HRPlusContainerNode newContainerNode = new HRPlusContainerNode(containerNode.getVersionId());
+		HRPlusContainerNode newContainerNode = new HRPlusContainerNode();
 		HRPlusNode transferNode;
 		for (HRPlusNode node : partition) {
 			transferNode = containerNode.removeNode(node.getObjectId());
@@ -230,35 +236,32 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
-	 * Determine whether @param containerNode is a root.
-	 * Assumes the container is alredy part of the tree.
-	 * @param containerNode 
-	 * @return true if @param containerNode is contained in @field rootMap
+	 * Determine whether {@param containerNode} is a root.
+	 * Assumes the container is already part of the tree.
+	 * 
+	 * @param containerNode  check if is root 
+	 * @return true if {@param containerNode} is a root
 	 */
 	private boolean isRoot(HRPlusContainerNode containerNode) {
 		if (containerNode == null || this.rootMap == null) {
 			// Edge case: the container is empty.
 			return false;
 		}
-		return this.hasVersion(containerNode.getVersionId());
+		return this.hasVersion(containerNode.getVersionIds().get(0));
 	}
 
 	/**
-	 * Re-distribute a tree's nodes among roots. This may happen after a regular
-	 * insert or after an insert where an old container node was split.
+	 * Re-distribute a tree's nodes among roots.
+	 * This may happen after a regular insert or after an insert where an old container node was split.
 	 * 
-	 * @param containerNode
-	 *            node we begin normalizing at
-	 * @param siblingContainerNodes
-	 *            siblings of @param containerNode
-	 * @param versionId
-	 *            TODO Possibly unnecessary. The version of the tree we're working in
+	 * @param containerNode  node we begin normalizing at
+	 * @param siblingContainerNodes  siblings of {@param containerNode}
+	 * @param versionId  possibly unnecessary, the version of the tree we're working in
 	 * @return The newly-adjusted container
 	 */
-	private HRPlusContainerNode adjustTree(
-			HRPlusContainerNode containerNode,
+	private HRPlusContainerNode adjustTree(HRPlusContainerNode containerNode,
 			HRPlusContainerNode newContainerNode, ObjectId versionId) {
-            Preconditions.checkNotNull(containerNode);
+	        Preconditions.checkNotNull(containerNode);
 		// Loop variables. Parents of current node.
 		HRPlusNode parent;
 		HRPlusContainerNode parentContainer;
@@ -271,7 +274,7 @@ public class HRPlusTree extends HRPlusTreeUtils {
 			containerMBR = containerNode.getMBR();
 			parent.setBounds(containerMBR);
 			// Siblings might be propagated upwards.
-			//TODO: why getObjectId()? Because we have nothing better for it yet. Need Gabriel.
+			// TODO: why getObjectId()? Because we have nothing better for it yet. Need Gabriel.
 			// And then do newContainer.getLayerId?
 			HRPlusNode newNode = new HRPlusNode(newContainerNode.getObjectId(),newContainerNode.getMBR(), versionId);
 			newNode.setChild(newContainerNode);
@@ -288,26 +291,35 @@ public class HRPlusTree extends HRPlusTreeUtils {
 			newContainerNode = secondSplitContainerNode;
 		}
                 return newContainerNode;
-//                return containerNode;
 	}
 
 	/**
-	 * @param objectId
-	 * @return the container associated with @param objectId
+	 * Gets the container associated with parameter
+	 * 
+	 * @param objectId  unique id for a container node
+	 * @return the container associated with {@param objectId}
 	 */
 	public HRPlusContainerNode lookupHRPlusContainerNode(ObjectId objectId) {
 		// TODO unguarded cast
 		return (HRPlusContainerNode) this.db.get(objectId);
 	}
 
+	/**
+	 * Gets the node associated with parameter
+	 * 
+	 * @param objectId
+	 * @return the node associated with {@param objectId}
+	 */
 	public HRPlusNode lookupHRPlusNode(ObjectId objectId) {
 		// TODO unguarded cast
 		return (HRPlusNode) this.db.get(objectId);
 	}
 
 	/**
-	 * @param layerId
-	 * @return entry points associated with @param layerId
+	 * Gets all roots for {@param layerId}
+	 * 
+	 * @param layerId  id to find roots for
+	 * @return entry points associated with {@param layerId}
 	 */
 	private List<HRPlusContainerNode> getRootsForLayerId(ObjectId layerId) {
 		return rootMap.get(layerId);
@@ -320,14 +332,15 @@ public class HRPlusTree extends HRPlusTreeUtils {
          *<ul>
          *<li>Get container list for root given by the current
 	 * version (time stamp) of the node being inserted. We don't care about layer
-	 * ids as everything in the tree has the same layer id (feature type id)</li>
-         *<li>Find the container with the max overlap with @param newNode</li>
-         *<li>If the container is a leaf, return it.</li>
-	 *<li>Else, if is one level above leaf then choose sub-container with the max overlap</li>
-	 *<li>Else, Pick the sub-container with the minimum area enlargement</li>
+	 * ids as everything in the tree has the same layer id (feature type id)
+         *<li>Find the container with the max overlap with @param newNode
+         *<li>If the container is a leaf, return it.
+	 *<li>Else, if is one level above leaf then choose sub-container with the max overlap
+	 *<li>Else, Pick the sub-container with the minimum area enlargement
 	 *</ul>
-	 * @param newNode
-	 * @return
+	 *
+	 * @param newNode  node to find a subtree for
+	 * @return best place to store the new node
 	 */
 	private HRPlusContainerNode chooseSubtree(final HRPlusNode newNode,
 			ObjectId versionId) {
@@ -388,21 +401,21 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
+	 * Gets all nodes under the param root.
 	 * 
-	 * @param containerList
+	 * @param containerList  containers corresponding to the root we want to scrape  
 	 * @return list of nodes associated with a specific root(Version)
 	 */
 	private List<HRPlusNode> getNodesForRoot(List<HRPlusContainerNode> containerList) {
-
 		List<HRPlusNode> nodes = new ArrayList<HRPlusNode>();
 		for (HRPlusContainerNode c : containerList) {
 			nodes.addAll(c.getNodesForContainer());
 		}
 		return nodes;
-
 	}
 
 	/**
+	 * Gets all nodes within this tree.
 	 * 
 	 * @return all the nodes in this HRPlusTree
 	 */
@@ -415,33 +428,42 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	}
 
 	/**
+	 * Gets the number of roots of this tree
 	 * 
 	 * @return the size of the root-map of this HRPlusTree
 	 */
 	public int getNumRoots() {
-		return this.rootMap.size();
+		int numRoots = 0;
+		for (List<HRPlusContainerNode> roots : this.rootMap.values()){
+		    numRoots += roots.size();
+		}
+		return numRoots;
 	}
 
+	/**
+	 * Gets the container nodes associated with the parameter id.
+	 * Used for testing. 
+	 * 
+	 * @param rootId  key to search {@field rootMap} with
+	 * @return containers associated with {@param rootId}, null if {@param rootId} is not in {@field rootMap}
+	 */
 	public List<HRPlusContainerNode> getContainersForRoot(ObjectId rootId) {
 		return this.rootMap.get(rootId);
-		// TODO: will return null if not in hashmap.(Added this method for use
-		// in test cases)
 	}
 	
 	/**
-	 * Use this for testing purposes
-	 * @param versionId
-	 * @return List of nodes belonging to the given version Id
+	 * Gets the nodes associated with the parameter version id.
+	 * Used for testing.
+	 * 
+	 * @param versionId  key to search for nodes with
+	 * @return list of nodes belonging to {@param versionId}
 	 */
 	public List<HRPlusNode> getNodes(ObjectId versionId){
-		
 		List<HRPlusNode> result = new ArrayList<HRPlusNode>();
-		if(this.rootMap.containsKey(versionId))
-		{
+		if(this.rootMap.containsKey(versionId)){
 			result = this.getNodesForRoot(this.rootMap.get(versionId));
 		}
 		return result;
-		
 	}
 
 }
