@@ -12,6 +12,7 @@ import java.util.Map;
 import org.geogit.storage.ObjectDatabase;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -55,6 +56,30 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	 */
 	private Map<ObjectId, List<HRPlusContainerNode>> rootMap = 
 			new HashMap<ObjectId, List<HRPlusContainerNode>>();
+	
+	public HRPlusTree(RevTreeImpl revTree, RevFeatureType featureType) {
+	    // Create an HR+ tree from an existing rev tree
+	    Iterator<Node> nodes = revTree.children();
+	    ImmutableList<Node> featureNodes;
+	    
+	    if (revTree.features().get() != null) {
+	        featureNodes = revTree.features().get();
+	    
+	        ObjectId objectId;
+	        for (Node featureNode : featureNodes) {
+	            Envelope e = new Envelope();
+	            featureNode.expand(e);
+	            objectId = featureNode.getObjectId();
+	            // TODO: How do we get the versionId?
+	            ObjectId versionId = ObjectId.NULL;
+	            
+	            this.insert(objectId, e, versionId);
+	        }
+	    
+	    }
+	    
+	}
+	
 	/**
 	 * Insert a node into this tree.
 	 * <p>

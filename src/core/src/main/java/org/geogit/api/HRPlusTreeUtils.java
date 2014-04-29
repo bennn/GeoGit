@@ -20,6 +20,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * and for details on insertion, see Section 4 of:
  *     [2] http://dbs.mathematik.uni-marburg.de/publications/myPapers/1990/BKSS90.pdf
  * 
+ * @author jillian
  */
 public class HRPlusTreeUtils {
     
