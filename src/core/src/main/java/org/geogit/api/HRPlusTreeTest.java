@@ -155,7 +155,7 @@ public class HRPlusTreeTest {
             tree.insert(ObjectId.forString("three"), new Envelope(), new ObjectId());
             tree.insert(ObjectId.forString("foar"), new Envelope(), new ObjectId());
             
-            assertEquals(1, tree.getNumRoots());
+            assertEquals(2, tree.getNumRoots());
         }	
 
 	@Test
@@ -307,7 +307,7 @@ public class HRPlusTreeTest {
 		tree.insert(id4, d,versionId1);
 		
 		assertEquals(4, tree.getNodes().size());
-		assertEquals(1, tree.getNumRoots());
+		assertEquals(2, tree.getNumRoots());
 		assertEquals(2,tree.getContainersForRoot(versionId1).size());
 	}
 

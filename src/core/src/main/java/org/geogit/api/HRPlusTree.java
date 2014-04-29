@@ -57,7 +57,14 @@ public class HRPlusTree extends HRPlusTreeUtils {
 	private Map<ObjectId, List<HRPlusContainerNode>> rootMap = 
 			new HashMap<ObjectId, List<HRPlusContainerNode>>();
 	
+	public HRPlusTree() {
+	    // TODO properly set these fields
+	    this.objectId = null; 
+	    this.db = null;
+	}
+	
 	public HRPlusTree(RevTreeImpl revTree, RevFeatureType featureType) {
+	    super();
 	    // Create an HR+ tree from an existing rev tree
             ObjectId objectId;
             Envelope env;
