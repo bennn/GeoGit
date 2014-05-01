@@ -439,6 +439,7 @@ public class HRPlusTreeTest {
 
     @Test
     public void testKeySplitContainerNodeParallelOverlapOne(){
+        // Three parallel lines, one box overlaps one of the lines
         HRPlusNode nodeA = new HRPlusNode(ObjectId.forString("A"), new Envelope(-10,-4,-10,10), new ObjectId());
         HRPlusNode nodeB = new HRPlusNode(ObjectId.forString("B"), new Envelope(-3,3,-10,10), new ObjectId());
         HRPlusNode nodeC = new HRPlusNode(ObjectId.forString("C"), new Envelope(4,10,-10,10), new ObjectId());
@@ -459,6 +460,7 @@ public class HRPlusTreeTest {
 
     @Test
     public void testKeySplitContainerNodeParallelOverlapTwo(){
+        // Three parallel lines, fourth box overlaps two lines
         HRPlusNode nodeA = new HRPlusNode(ObjectId.forString("A"), new Envelope(-10,-4,-10,10), new ObjectId());
         HRPlusNode nodeB = new HRPlusNode(ObjectId.forString("B"), new Envelope(-3,3,-10,10), new ObjectId());
         HRPlusNode nodeC = new HRPlusNode(ObjectId.forString("C"), new Envelope(4,10,-10,10), new ObjectId());
@@ -479,6 +481,7 @@ public class HRPlusTreeTest {
 
     @Test
     public void testKeySplitContainerNodeParallelOverlapThree(){
+        // Three parallel lines, fourth box overlaps three lines
         HRPlusNode nodeA = new HRPlusNode(ObjectId.forString("A"), new Envelope(-10,-4,-10,10), new ObjectId());
         HRPlusNode nodeB = new HRPlusNode(ObjectId.forString("B"), new Envelope(-3,3,-10,10), new ObjectId());
         HRPlusNode nodeC = new HRPlusNode(ObjectId.forString("C"), new Envelope(4,10,-10,10), new ObjectId());
@@ -516,8 +519,25 @@ public class HRPlusTreeTest {
         assertEquals(new Envelope(7,10,-5,-8), contA.getMBR());
         assertEquals(new Envelope(-10,-7,5,8), contB.getMBR());
     }
+    
+    @Test
+    public void testKeySplitContainerNodeThreeOverlappingSquares(){
+        HRPlusNode nodeA = new HRPlusNode(ObjectId.forString("A"), new Envelope(-10,-8,6,8), new ObjectId());
+        HRPlusNode nodeB = new HRPlusNode(ObjectId.forString("B"), new Envelope(-9,-7,5,7), new ObjectId());
+        HRPlusNode nodeC = new HRPlusNode(ObjectId.forString("C"), new Envelope(-8,-6,6,4), new ObjectId());
+        HRPlusNode nodeD = new HRPlusNode(ObjectId.forString("D"), new Envelope(9,7,-5,-7), new ObjectId());
 
-	
-	
+        HRPlusContainerNode contA = new HRPlusContainerNode(new ObjectId());
+        contA.addNode(nodeA); contA.addNode(nodeB);
+        contA.addNode(nodeC); contA.addNode(nodeD);
+        
+        HRPlusTree hr = new HRPlusTree();
+        HRPlusContainerNode contB = hr.keySplitContainerNode(contA);
+        
+        assertEquals(1, contA.getNumNodes());
+        assertEquals(3, contB.getNumNodes());
+        assertEquals(new Envelope(7,9,-5,-7), contA.getMBR());
+        assertEquals(new Envelope(-10,-6,4,8), contB.getMBR());    
+    }
 
 }

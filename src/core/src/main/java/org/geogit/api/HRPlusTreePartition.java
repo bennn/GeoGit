@@ -7,10 +7,10 @@ import com.google.common.base.Preconditions;
 
 /**
  * Divides a list of nodes spatially.
- * Tracks partition details. 
+ * Constructor accepts a list of nodes and then chooses the optimal point at which to divide them into two groups.
+ * Tracks partition details, storing them in fields.
  * <p>
- * Based on the algorithm from
- *     [2] http://dbs.mathematik.uni-marburg.de/publications/myPapers/1990/BKSS90.pdf
+ * Based on the algorithm from {@link http://dbs.mathematik.uni-marburg.de/publications/myPapers/1990/BKSS90.pdf}
  * Create a spatial partition of a list of nodes, minimizing the overlap between envelopes and the total area of envelopes bounding the partitions.
  * These metrics were explicitly stated and experimentally tested in the paper.
  */
@@ -54,11 +54,8 @@ public class HRPlusTreePartition extends HRPlusTreeUtils{
      * Following the paper, we partition nodes as follows:
      * * {@code let M = this.getMaxDegree()}
      * * {@code and m = this.getMinDegree()}
-     * We pick the best distribution of these M+1 nodes by iterating
-     * over (M - 2m+1) distributions and choosing the one with the
-     * best 'goodness' rating. The kth distribution has the first
-     * (m-1)+k nodes in the first group and the others in the second.
-     * <p>
+     * We pick the best distribution of these M+1 nodes by iterating over (M - 2m+1) distributions and choosing the one with the best 'goodness' rating. 
+     * The kth distribution has the first (m-1)+k nodes in the first group and the others in the second.
      * 
      * @param sortedNodes  the nodes to partition
      */
@@ -105,7 +102,7 @@ public class HRPlusTreePartition extends HRPlusTreeUtils{
     }
 
     /**
-     * Gets the area enclosed by  
+     * Gets the area enclosed by the partition.  
      * <p>
      * Determines how much area is required to cover both partitions in total.
      * Value is the sum of the area of the bounding box enclosing the first with the area of the box enclosing the second. 
